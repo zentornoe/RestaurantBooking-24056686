@@ -31,8 +31,6 @@ public:
             auto inQueueScheduleDateTime = bookedSchedule->getDateTime();
             auto newScheduleDataTime = schedule->getDateTime();
             if (isSameTime(inQueueScheduleDateTime, newScheduleDataTime)) {
-                std::cout << schedule->getDateTime().tm_hour << "\n"; // 입력
-                std::cout << bookedSchedule->getDateTime().tm_hour << "\n"; // 이미 있는 것
                 numberOfPeople += bookedSchedule->getNumberOfPeople();
             }
         }
@@ -40,13 +38,11 @@ public:
             throw std::runtime_error("Number of people is over restaurant capacity per hour");
         }
 
-        /*
         // 일요일에는 시스템을 오픈하지 않는다.
-        time_t now = time(nullptr);
+        time_t now = getNow();
         if (getDayOfWeek(now) == "Sunday") {
             throw std::runtime_error("Booking system is not available on sunday");
         }
-        */
 
         schedules.push_back(schedule);
 
@@ -56,6 +52,10 @@ public:
         if (schedule->getCustomer().getEmail() != "") {
             mailSender->sendMail(schedule);
         }
+    }
+
+    virtual time_t getNow() {
+        return time(nullptr);
     }
 
     bool hasSchedule(Schedule* schedule) {
@@ -85,6 +85,7 @@ private:
         localtime_s(&tmTime, &tm_t);
         char buffer[100] = { 0 };
         std::strftime(buffer, sizeof(buffer), "%A", &tmTime);
+        std::cout << "Weekday: " << buffer << std::endl;
         return string{ buffer };
     }
 

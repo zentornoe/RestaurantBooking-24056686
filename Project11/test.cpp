@@ -2,6 +2,9 @@
 #include "booking_scheduler.cpp"
 #include "testable_sms_sender.cpp"
 #include "testable_mail_sender.cpp"
+//#include "monday_booking_scheduler.cpp"
+//#include "sunday_booking_scheduler.cpp"
+#include "testable_booking_scheduler.cpp"
 
 using namespace testing;
 
@@ -15,7 +18,7 @@ protected:
 	}
 public:
 	tm getTime(int year, int mon, int day, int hour, int min) {
-		tm result = { 0, min, hour, day, mon - 1, year - 1990, 0, 0, -1 };
+		tm result = { 0, min, hour, day, mon - 1, year - 1900, 0, 0, -1 };
 		mktime(&result);
 		return result;
 	}
@@ -29,6 +32,7 @@ public:
 	tm NOT_ON_THE_HOUR;
 	tm ON_THE_HOUR;
 	Customer CUSTOMER{ "Fake name", "010-1234-5678" };
+	Customer CUSTOMER_WITH_MAIL{ "Fake Name", "010-1234-5678", "test@test.com" };
 	const int UNDER_CAPACITY = 1;
 	const int CAPACITY_PER_HOUR = 3;
 
@@ -65,7 +69,7 @@ TEST_F(BookingItem, t3) {//시간대별_인원제한이_있다_같은_시간대�
 	}
 }
 
-TEST_F(BookingItem, DISABLED_t4) {//시간대별_인원제한이_있다_같은_시간대가_다르면_Capacity_차있어도_스케쥴_추가_성공) {
+TEST_F(BookingItem, t4) {//시간대별_인원제한이_있다_같은_시간대가_다르면_Capacity_차있어도_스케쥴_추가_성공) {
 	Schedule* schedule = new Schedule{ ON_THE_HOUR, CAPACITY_PER_HOUR, CUSTOMER };
 	bookingScheduler.addSchedule(schedule);
 
@@ -94,8 +98,7 @@ TEST_F(BookingItem, t6) {//이메일이_없는_경우에는_이메일_미발송)
 }
 
 TEST_F(BookingItem, t7) {//이메일이_있는_경우에는_이메일_발송) {
-	Customer customerWithMail{ "Fake Name", "010-1234-5678", "test@test.com" };
-	Schedule* schedule = new Schedule{ ON_THE_HOUR, UNDER_CAPACITY, customerWithMail };
+	Schedule* schedule = new Schedule{ ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER_WITH_MAIL };
 
 	bookingScheduler.addSchedule(schedule);
 
@@ -103,10 +106,25 @@ TEST_F(BookingItem, t7) {//이메일이_있는_경우에는_이메일_발송) {
 }
 
 TEST_F(BookingItem, t8) {//현재날짜가_일요일인_경우_예약불가_예외처리) {
-
+	BookingScheduler* bookingScheduler = new TestableBookingScheduler{ CAPACITY_PER_HOUR,  getTime(2021, 3, 28, 17, 0) };
+	
+	try {
+		Schedule* schedule = new Schedule{ ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER_WITH_MAIL };
+		bookingScheduler->addSchedule(schedule);
+		FAIL();
+	}
+	catch(std::runtime_error& e){
+		EXPECT_EQ(string{ e.what() }, string{ "Booking system is not available on sunday" });
+	}
 }
 
 TEST_F(BookingItem, t9) {//현재날짜가_일요일이_아닌경우_예약가능) {
+	BookingScheduler* bookingScheduler = new TestableBookingScheduler{ CAPACITY_PER_HOUR, getTime(2024, 6, 3, 17, 0) };
+
+	Schedule* schedule = new Schedule{ ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER_WITH_MAIL };
+	bookingScheduler->addSchedule(schedule);
+
+	EXPECT_EQ(true, bookingScheduler->hasSchedule(schedule));
 
 }
 
