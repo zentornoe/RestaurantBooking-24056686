@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 #include "schedule.cpp"
 #include "mail_sender.cpp"
@@ -27,7 +28,9 @@ public:
         // 시간당 예약인원을 초과할 경우 RuntimeException 발생
         int numberOfPeople = schedule->getNumberOfPeople();
         for (Schedule* bookedSchedule : schedules) {
-            if (isSameTime(bookedSchedule->getDateTime(), schedule->getDateTime())) {
+            auto inQueueScheduleDateTime = bookedSchedule->getDateTime();
+            auto newScheduleDataTime = schedule->getDateTime();
+            if (isSameTime(inQueueScheduleDateTime, newScheduleDataTime)) {
                 numberOfPeople += bookedSchedule->getNumberOfPeople();
             }
         }
@@ -35,13 +38,11 @@ public:
             throw std::runtime_error("Number of people is over restaurant capacity per hour");
         }
 
-        /*
         // 일요일에는 시스템을 오픈하지 않는다.
-        time_t now = time(nullptr);
+        time_t now = getNow();
         if (getDayOfWeek(now) == "Sunday") {
             throw std::runtime_error("Booking system is not available on sunday");
         }
-        */
 
         schedules.push_back(schedule);
 
@@ -51,6 +52,10 @@ public:
         if (schedule->getCustomer().getEmail() != "") {
             mailSender->sendMail(schedule);
         }
+    }
+
+    virtual time_t getNow() {
+        return time(nullptr);
     }
 
     bool hasSchedule(Schedule* schedule) {
@@ -68,7 +73,9 @@ public:
 
 private:
     //두 시간이 같은지 확인
-    bool isSameTime(tm a, tm b) {
+    bool isSameTime(tm& a,tm& b) {
+        auto t1 = mktime(&a);
+        auto t2 = mktime(&b);
         return mktime(&a) == mktime(&b);
     }
 
@@ -78,6 +85,7 @@ private:
         localtime_s(&tmTime, &tm_t);
         char buffer[100] = { 0 };
         std::strftime(buffer, sizeof(buffer), "%A", &tmTime);
+        std::cout << "Weekday: " << buffer << std::endl;
         return string{ buffer };
     }
 
