@@ -36,5 +36,11 @@
     <ClCompile Include="test.cpp">
       <Filter>리소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="testable_sms_sender.cpp">
+      <Filter>리소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="testable_mail_sender.cpp">
+      <Filter>리소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

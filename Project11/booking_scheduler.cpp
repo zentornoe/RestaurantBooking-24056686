@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 #include "schedule.cpp"
 #include "mail_sender.cpp"
@@ -27,7 +28,11 @@ public:
         // 시간당 예약인원을 초과할 경우 RuntimeException 발생
         int numberOfPeople = schedule->getNumberOfPeople();
         for (Schedule* bookedSchedule : schedules) {
-            if (isSameTime(bookedSchedule->getDateTime(), schedule->getDateTime())) {
+            auto inQueueScheduleDateTime = bookedSchedule->getDateTime();
+            auto newScheduleDataTime = schedule->getDateTime();
+            if (isSameTime(inQueueScheduleDateTime, newScheduleDataTime)) {
+                std::cout << schedule->getDateTime().tm_hour << "\n"; // 입력
+                std::cout << bookedSchedule->getDateTime().tm_hour << "\n"; // 이미 있는 것
                 numberOfPeople += bookedSchedule->getNumberOfPeople();
             }
         }
@@ -68,7 +73,9 @@ public:
 
 private:
     //두 시간이 같은지 확인
-    bool isSameTime(tm a, tm b) {
+    bool isSameTime(tm& a,tm& b) {
+        auto t1 = mktime(&a);
+        auto t2 = mktime(&b);
         return mktime(&a) == mktime(&b);
     }
 
