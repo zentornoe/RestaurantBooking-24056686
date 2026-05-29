@@ -36,31 +36,41 @@ TEST_F(BookingItem, t2) {//예약은_정시에만_가능하다_정시인_경우_
 	EXPECT_EQ(true, bookingScheduler.hasSchedule(schedule));
 }
 
-TEST(BookingSchedulerTest, t3) {//시간대별_인원제한이_있다_같은_시간대에_Capacity_초과할_경우_예외발생) {
+TEST_F(BookingItem, t3) {//시간대별_인원제한이_있다_같은_시간대에_Capacity_초과할_경우_예외발생) {
+	Schedule* schedule = new Schedule{ ON_THE_HOUR, CAPACITY_PER_HOUR, CUSTOMER };
+	bookingScheduler.addSchedule(schedule);
+
+	try {
+		Schedule* newSchedule = new Schedule{ ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER };
+		bookingScheduler.addSchedule(newSchedule);
+		FAIL();
+	}
+	catch (std::runtime_error& e) {
+		EXPECT_EQ(string{ e.what() }, string{ "Number of people is over restaurant capacity per hour" });
+	}
+}
+
+TEST_F(BookingItem, t4) {//시간대별_인원제한이_있다_같은_시간대가_다르면_Capacity_차있어도_스케쥴_추가_성공) {
 
 }
 
-TEST(BookingSchedulerTest, t4) {//시간대별_인원제한이_있다_같은_시간대가_다르면_Capacity_차있어도_스케쥴_추가_성공) {
+TEST_F(BookingItem, t5) {//예약완료시_SMS는_무조건_발송) {
 
 }
 
-TEST(BookingSchedulerTest, t5) {//예약완료시_SMS는_무조건_발송) {
+TEST_F(BookingItem, t6) {//이메일이_없는_경우에는_이메일_미발송) {
 
 }
 
-TEST(BookingSchedulerTest, t6) {//이메일이_없는_경우에는_이메일_미발송) {
+TEST_F(BookingItem, t7) {//이메일이_있는_경우에는_이메일_발송) {
 
 }
 
-TEST(BookingSchedulerTest, t7) {//이메일이_있는_경우에는_이메일_발송) {
+TEST_F(BookingItem, t8) {//현재날짜가_일요일인_경우_예약불가_예외처리) {
 
 }
 
-TEST(BookingSchedulerTest, t8) {//현재날짜가_일요일인_경우_예약불가_예외처리) {
-
-}
-
-TEST(BookingSchedulerTest, t9) {//현재날짜가_일요일이_아닌경우_예약가능) {
+TEST_F(BookingItem, t9) {//현재날짜가_일요일이_아닌경우_예약가능) {
 
 }
 
